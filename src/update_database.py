@@ -1,9 +1,9 @@
-from src.data.login_details import get_login_details
-from src.data.locate_key import locate_element
-import src.data.candidate_data
-from src.data.candidate_data import last_api_entry, get_cand_data, retrieve_activities
-from src.data.candidate_dataframe import create_df, merge_df, transform_df
-from src.data.database import df_to_db, db_to_df, create_db, update_db, retrieve_last_db_entry
+from data.login_details import get_login_details
+from data.locate_key import locate_element
+import data.candidate_data
+from data.candidate_data import last_api_entry, get_cand_data, retrieve_activities
+from data.candidate_dataframe import create_df, merge_df, transform_df
+from data.database import df_to_db, db_to_df, create_db, update_db, retrieve_last_db_entry
 
 key_list = data.candidate_data.key_list
 user, pw, auth_key = get_login_details()
