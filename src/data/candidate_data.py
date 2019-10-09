@@ -59,7 +59,9 @@ def last_api_entry(url, headers):
     return last_id
 
 
-def get_cand_data(df_dict, key_list, url, headers, cand_id_list=[], start_id='', start_date=''):
+def get_cand_data(df_dict, key_list, url, headers, cand_id_list=None, start_id='', start_date=''):
+    if cand_id_list is None:
+            cand_id_list = []
     if start_date != '':
         start_after = '&created_after=' + start_date
     else:
@@ -74,7 +76,6 @@ def get_cand_data(df_dict, key_list, url, headers, cand_id_list=[], start_id='',
     limit = 'limit=100'
     request = requests.get(url_section + limit + start_after + start_id + '.json', headers=headers)
     for cand in request.json()['candidates']:
-        cand_id_list = cand_id_list
         cand_id_list.append(cand['id'])
         for k in key_list:
             loc = locate_element(cand, k)
@@ -148,10 +149,10 @@ def retrieve_activities(url, headers, cand_id_list):
         time.sleep(1.0)
         for k in key_list_cand:
             loc = locate_element(r_cand_id.json()['candidate'], k)
-            v = r_cand_id.json()['candidate']
-            for i in loc:
-                v = v[i]
-            df_dict_cand[k].append(v)
+            value = r_cand_id.json()['candidate']
+            for idx in loc:
+                value = value[idx]
+            df_dict_cand[k].append(value)
 
         # loop through activities for candidate cand_id
         r_cand_id_act = requests.get(url_section + cand_id + act + '.json', headers=headers)
