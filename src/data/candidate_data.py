@@ -1,13 +1,17 @@
-from copy import deepcopy
-import requests
-import numpy as np
+"""
+Functions to retrieve candidate data from Workable through Workable API.
+"""
+
 import datetime
-from datetime import date
 import time
+from copy import deepcopy
 
-from data.locate_key import locate_element
+import numpy as np
+import requests
 
-key_list = [
+from .locate_key import locate_element
+
+KEY_LIST = [
     'id',
     'name',
     'firstname',
@@ -42,39 +46,42 @@ def last_api_entry(url, headers):
     'id' of the last entry
     '''
     section = 'candidates?'
-    limit = '100'
-    d = datetime.datetime.today()
-    r_last_entry = requests.get(url + section + 'limit=' + limit + '&created_after=' + d.isoformat() + '.json', headers=headers)
-    while len(r_last_entry.json()['candidates']) == 0:
-        d = (d - datetime.timedelta(days=1))
-        r_last_entry = requests.get(url + section + 'limit=' + limit + '&created_after=' + d.isoformat() + '.json',
-                                    headers=headers)
+    url_section = url + section
+    limit = 'limit=100'
+    api_date = datetime.datetime.today().isoformat()
+    created_after = '&created_after=' + api_date
+    r_last_entry = requests.get(url_section + limit + created_after + '.json', headers=headers)
+    while r_last_entry.json()['candidates']:
+        api_date = (api_date - datetime.timedelta(days=1))
+        r_last_entry = requests.get(url_section + limit + created_after + '.json', headers=headers)
         time.sleep(0.9)
     last_id = r_last_entry.json()['candidates'][-1]['id']
     return last_id
 
+
 def get_cand_data(df_dict, key_list, url, headers, cand_id_list=[], start_id='', start_date=''):
     if start_date != '':
-        created_after = '&created_after=' + start_date
+        start_after = '&created_after=' + start_date
     else:
-        created_after = ''
+        start_after = ''
 
     if start_id != '':
         start_id = '&since_id=' + start_id
     else:
         start_id = ''
     section = 'candidates?'
-    limit = '100'
-    request = requests.get(url + section + 'limit=' + limit + created_after + start_id + '.json', headers=headers)
+    url_section = url + section
+    limit = 'limit=100'
+    request = requests.get(url_section + limit + start_after + start_id + '.json', headers=headers)
     for cand in request.json()['candidates']:
         cand_id_list = cand_id_list
         cand_id_list.append(cand['id'])
         for k in key_list:
             loc = locate_element(cand, k)
-            v = cand
+            value = cand
             for i in loc:
-                v = v[i]
-            df_dict[k].append(v)
+                value = value[i]
+            df_dict[k].append(value)
     try:
         since_id = request.json()['paging']['next'].split("since_id=", 1)[1]
         return df_dict, since_id, cand_id_list
@@ -133,9 +140,11 @@ def retrieve_activities(url, headers, cand_id_list):
 
     # Retrieve data through API
     section = 'candidates/'
+    url_section = url + section
+    act = '/activities'
 
     for cand_id in cand_id_list:
-        r_cand_id = requests.get(url + section + cand_id + '.json', headers=headers)
+        r_cand_id = requests.get(url_section + cand_id + '.json', headers=headers)
         time.sleep(1.0)
         for k in key_list_cand:
             loc = locate_element(r_cand_id.json()['candidate'], k)
@@ -145,7 +154,7 @@ def retrieve_activities(url, headers, cand_id_list):
             df_dict_cand[k].append(v)
 
         # loop through activities for candidate cand_id
-        r_cand_id_act = requests.get(url + section + cand_id + '/activities' + '.json', headers=headers)
+        r_cand_id_act = requests.get(url_section + cand_id + act + '.json', headers=headers)
         r_cand_id_act = r_cand_id_act.json()['activities']
         time.sleep(1.0)
         stages = deepcopy(stage_name_list)
