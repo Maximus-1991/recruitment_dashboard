@@ -1,93 +1,129 @@
-import numpy as np
+"""
+Functions to create candidate data DataFrames
+"""
+
 import pandas as pd
 pd.options.mode.chained_assignment = None
 
 def create_df(dictionary):
     '''
-    Convert dictionary into pandas DataFrame
-    Inputs:
+    Functions that converts dictionary into pandas DataFrame
 
-    df_dict: dictionary containing candidate data
-    Outputs:
+    Args:
+        dictionary: dictionary to be converted into pandas DataFrame
 
-    DataFrame containing the same candidate data as the input
+    Returns:
+        created_df: pandas DataFrame
     '''
-    df = pd.DataFrame.from_dict(dictionary, orient='columns')
-    return df
+    created_df = pd.DataFrame.from_dict(dictionary, orient='columns')
+    return created_df
 
-def merge_df(df1, df2, how='left', on=['id']):
+def merge_df(df1, df2, how='left', merge_on='id'):
     '''
     Function to create candidate activity dictionary
-    Inputs:
 
-    df_dict: dictionary containing candidate data
-    Outputs:
+    Args:
+        df1: left DataFrame to merge
+        df2: right DataFrame to merge
+        how: Type of merge to be performed
+        merge_on: Column or index level names to join on (single label or list)
 
-    DataFrame containing the same candidate data as the input
+    Returns:
+        merged_df: merged DataFrame
     '''
-    df = pd.merge(df1, df2, how=how, on=on)
-    return df
+    merged_df = pd.merge(df1, df2, how=how, on=merge_on)
+    return merged_df
 
 
-def transform_df(df):
+def transform_df(df_to_trans):
     '''
     Function to transform DataFrame
-    Inputs:
 
-    df_dict: dictionary containing candidate data
-    Outputs:
+    Args:
+        df_transform: DataFrame to be transformed
+
+    Returns:
+        transformed_df: Transformed DataFrame
 
     '''
     # Rename duplicate column name to prevent error when creating SQL database
-    df = df.rename(columns={'sourced': 'is_sourced'})
+    df_to_trans = df_to_trans.rename(columns={'sourced': 'is_sourced'})
 
     # Replace and Delete columns
-    df['To schedule'][(df['Inplannen 1e gesorek'].isnull() == False) & (df['To schedule'].isnull() == True)] = \
-    df['Inplannen 1e gesorek'][(df['Inplannen 1e gesorek'].isnull() == False) & (df['To schedule'].isnull() == True)]
-    df.drop('Inplannen 1e gesorek', axis=1, inplace=True)
-    df['To schedule'][(df['Inplannen 1e gesprek'].isnull() == False) & (df['To schedule'].isnull() == True)] = \
-    df['Inplannen 1e gesprek'][(df['Inplannen 1e gesprek'].isnull() == False) & (df['To schedule'].isnull() == True)]
-    df.drop('Inplannen 1e gesprek', axis=1, inplace=True)
-    df['1st Interview'][(df['inplannen 2e gesprek'].isnull() == False) & (df['1st Interview'].isnull() == True)] = \
-    df['inplannen 2e gesprek'][(df['inplannen 2e gesprek'].isnull() == False) & (df['1st Interview'].isnull() == True)]
-    df.drop('inplannen 2e gesprek', axis=1, inplace=True)
-    df['1st Interview'][(df['1e gesprek'].isnull() == False) & (df['1st Interview'].isnull() == True)] = \
-    df['1e gesprek'][(df['1e gesprek'].isnull() == False) & (df['1st Interview'].isnull() == True)]
-    df.drop('1e gesprek', axis=1, inplace=True)
-    df['1st Interview'][(df['Interview 1'].isnull() == False) & (df['1st Interview'].isnull() == True)] = \
-    df['Interview 1'][(df['Interview 1'].isnull() == False) & (df['1st Interview'].isnull() == True)]
-    df.drop('Interview 1', axis=1, inplace=True)
-    df['2nd Interview'][(df['Interview 2'].isnull() == False) & (df['2nd Interview'].isnull() == True)] = \
-    df['Interview 2'][(df['Interview 2'].isnull() == False) & (df['2nd Interview'].isnull() == True)]
-    df.drop('Interview 2', axis=1, inplace=True)
-    df['2nd Interview'][(df['Assessment'].isnull() == False) & (df['2nd Interview'].isnull() == True)] = \
-    df['Assessment'][(df['Assessment'].isnull() == False) & (df['2nd Interview'].isnull() == True)]
-    df.drop('Assessment', axis=1, inplace=True)
-    df['2nd Interview'][(df['2e gesprek'].isnull() == False) & (df['2nd Interview'].isnull() == True)] = \
-    df['2e gesprek'][(df['2e gesprek'].isnull() == False) & (df['2nd Interview'].isnull() == True)]
-    df.drop('2e gesprek', axis=1, inplace=True)
-    df['Offer'][(df['Aanbieding'].isnull() == False) & (df['Offer'].isnull() == True)] = df['Aanbieding'][
-        (df['Aanbieding'].isnull() == False) & (df['Offer'].isnull() == True)]
-    df.drop('Aanbieding', axis=1, inplace=True)
+    change_col = 'Inplannen 1e gesorek'
+    keep_col = 'To schedule'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
 
-    df['Hired'][(df['Aangenomen'].isnull() == False) & (df['Hired'].isnull() == True)] = df['Aangenomen'][
-        (df['Aangenomen'].isnull() == False) & (df['Hired'].isnull() == True)]
-    df.drop('Aangenomen', axis=1, inplace=True)
+    change_col = 'Inplannen 1e gesprek'
+    keep_col = 'To schedule'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = 'inplannen 2e gesprek'
+    keep_col = '1st Interview'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = '1e gesprek'
+    keep_col = '1st Interview'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = 'Interview 1'
+    keep_col = '1st Interview'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = 'Interview 2'
+    keep_col = '2nd Interview'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = 'Assessment'
+    keep_col = '2nd Interview'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = '2e gesprek'
+    keep_col = '2nd Interview'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = 'Aanbieding'
+    keep_col = 'Offer'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
+
+    change_col = 'Aangenomen'
+    keep_col = 'Hired'
+    df_to_trans[keep_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())] = \
+    df_to_trans[change_col][(df_to_trans[change_col].notnull()) & (df_to_trans[keep_col].isnull())]
+    df_to_trans.drop(change_col, axis=1, inplace=True)
 
     # Delete Columns
-    df.drop('Test Fase', axis=1, inplace=True)
-    df.drop('intern evalueren', axis=1, inplace=True)
-    df.drop('Plan 1', axis=1, inplace=True)
-    df.drop('Plan 2', axis=1, inplace=True)
-    df.drop('Vergaarbak', axis=1, inplace=True)
+    df_to_trans.drop('Test Fase', axis=1, inplace=True)
+    df_to_trans.drop('intern evalueren', axis=1, inplace=True)
+    df_to_trans.drop('Plan 1', axis=1, inplace=True)
+    df_to_trans.drop('Plan 2', axis=1, inplace=True)
+    df_to_trans.drop('Vergaarbak', axis=1, inplace=True)
 
     # Remove only for now (will be used for source of candidate)
-    df.drop('tags', axis=1, inplace=True)
+    df_to_trans.drop('tags', axis=1, inplace=True)
 
     # Replace np.nan with None, as None is accepted if df is written to a DB using df.to_sql
-    # Note that None will only be converted to NULL in SQL if df.to_sql is used, not using executemany
+    # None will only be converted to NULL in SQL if df.to_sql is used, not using executemany
     # NaT is converted as None if using to_sql
-    df = df.where((pd.notnull(df)), None)
+    df_to_trans = df_to_trans.where((pd.notnull(df_to_trans)), None)
 
     # Convert None to 'nan' if getting errors when inserting into MySQL DB
     # df.fillna(value='nan', inplace=True)
@@ -108,9 +144,11 @@ def transform_df(df):
         'disqualified_at'
     ]
     for date_col in date_cols:
-        df[date_col] = pd.to_datetime(pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d'))
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
-            df[col][df[col].isnull() == False] = df[col][df[col].isnull() == False].apply(lambda x: x.lower())
-    return df
+        df_to_trans[date_col] = pd.to_datetime(pd.to_datetime(df_to_trans[date_col]).dt.strftime('%Y-%m-%d'))
+    for col in df_to_trans.columns:
+        if df_to_trans[col].dtype == 'object':
+            df_to_trans[col] = df_to_trans[col].str.encode('ascii', 'ignore').str.decode('ascii')
+            df_to_trans[col][df_to_trans[col].notnull()] = \
+            df_to_trans[col][df_to_trans[col].notnull()].apply(lambda x: x.lower())
+    transformed_df = df_to_trans
+    return transformed_df

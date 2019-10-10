@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 ADD src .
 ADD .env .
 
-CMD [ "python", "-m", "src.update_database.py"]
+CMD [ "python", "-m", "src"]

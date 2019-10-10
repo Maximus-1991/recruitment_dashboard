@@ -59,7 +59,7 @@ def last_api_entry(url, headers):
     return last_id
 
 
-def get_cand_data(df_dict, keys, url, headers, cand_id_list=None, start_id=None, start_date=None):
+def get_cand_data(df_dict, keys, api_url, api_headers, cand_id_list=None, start_id=None, start_date=None):
     '''
     Function to retrieve candidate data and store in dictionary
     Every Workable page contains 100 candidates, as specified by limit
@@ -67,8 +67,8 @@ def get_cand_data(df_dict, keys, url, headers, cand_id_list=None, start_id=None,
     Args:
         df_dict: dictionary containing candidate data
         keys: all the required keys from the .json() that need to be put in DataFrame
-        url: Workable API url
-        headers: API Headers (contains Authorization Headers)
+        api_url: Workable API url
+        api_headers: API Headers (contains Authorization Headers)
         cand_id_list: list of candidate IDs (Default is None)
         start_id: returns results with a candidate ID greater than or equal to the specified ID
         start_date: API request returns results created after the specified timestamp
@@ -91,9 +91,9 @@ def get_cand_data(df_dict, keys, url, headers, cand_id_list=None, start_id=None,
     else:
         start_id = ''
 
-    section = url+'candidates?'
+    section = api_url + 'candidates?'
     limit = 'limit=100'
-    request = requests.get(section + limit + start_after + start_id + '.json', headers=headers)
+    request = requests.get(section + limit + start_after + start_id + '.json', headers=api_headers)
     for cand in request.json()['candidates']:
         cand_id_list.append(cand['id'])
         for key in keys:
@@ -163,7 +163,7 @@ def retrieve_activities(url, headers, cand_id_list):
     # Retrieve data through API
     section = 'candidates/'
     url_section = url + section
-    act = '/activities'
+    act_url = '/activities'
 
     for cand_id in cand_id_list:
         r_cand_id = requests.get(url_section + cand_id + '.json', headers=headers)
@@ -176,7 +176,7 @@ def retrieve_activities(url, headers, cand_id_list):
             df_dict_cand[k].append(value)
 
         # loop through activities for candidate cand_id
-        r_cand_id_act = requests.get(url_section + cand_id + act + '.json', headers=headers)
+        r_cand_id_act = requests.get(url_section + cand_id + act_url + '.json', headers=headers)
         r_cand_id_act = r_cand_id_act.json()['activities']
         time.sleep(1.0)
         stages = deepcopy(stage_name_list)
