@@ -36,14 +36,14 @@ KEY_LIST = [
 
 def last_api_entry(url, headers):
     '''
-    Function to retrieve the last entry in Workable through API
+    Function to retrieve the last candidate id of last entry in Workable
 
-    Inputs:
-    url: url of the Workable API
-    headers: headers to connect to the API
+    Args:
+        url: url of the Workable API
+        headers: headers to connect to the API
 
-    Outputs:
-    'id' of the last entry
+    Returns:
+        candidate id of the last entry in Workable
     '''
     section = 'candidates?'
     url_section = url + section
@@ -59,47 +59,68 @@ def last_api_entry(url, headers):
     return last_id
 
 
-def get_cand_data(df_dict, key_list, url, headers, cand_id_list=None, start_id='', start_date=''):
+def get_cand_data(df_dict, keys, url, headers, cand_id_list=None, start_id=None, start_date=None):
+    '''
+    Function to retrieve candidate data and store in dictionary
+    Every Workable page contains 100 candidates, as specified by limit
+
+    Args:
+        df_dict: dictionary containing candidate data
+        keys: all the required keys from the .json() that need to be put in DataFrame
+        url: Workable API url
+        headers: API Headers (contains Authorization Headers)
+        cand_id_list: list of candidate IDs (Default is None)
+        start_id: returns results with a candidate ID greater than or equal to the specified ID
+        start_date: API request returns results created after the specified timestamp
+
+    Returns:
+        DataFrame containing the same candidate data as the input
+        since_id: specifies the first candidate ID of the next page in Workable
+        cand_id_list: list of candidate IDs that are retrieved from the Workable page
+    '''
     if cand_id_list is None:
-            cand_id_list = []
-    if start_date != '':
+        cand_id_list = []
+
+    if start_date is not None:
         start_after = '&created_after=' + start_date
     else:
         start_after = ''
 
-    if start_id != '':
+    if start_id is not None:
         start_id = '&since_id=' + start_id
     else:
         start_id = ''
-    section = 'candidates?'
-    url_section = url + section
+
+    section = url+'candidates?'
     limit = 'limit=100'
-    request = requests.get(url_section + limit + start_after + start_id + '.json', headers=headers)
+    request = requests.get(section + limit + start_after + start_id + '.json', headers=headers)
     for cand in request.json()['candidates']:
         cand_id_list.append(cand['id'])
-        for k in key_list:
-            loc = locate_element(cand, k)
+        for key in keys:
+            loc = locate_element(cand, key)
             value = cand
-            for i in loc:
-                value = value[i]
-            df_dict[k].append(value)
+            for idx in loc:
+                value = value[idx]
+            df_dict[key].append(value)
     try:
         since_id = request.json()['paging']['next'].split("since_id=", 1)[1]
         return df_dict, since_id, cand_id_list
-    except:
+    except KeyError:
         since_id = None
         return df_dict, since_id, cand_id_list
 
 
 def retrieve_activities(url, headers, cand_id_list):
     '''
-    Function to create candidate activity dictionary
-    Inputs:
+    Function to retrieve for a each candidate his/her activity data and store in dictionary
 
-    df_dict: dictionary containing candidate data
-    Outputs:
+    Args:
+        url: Workable API url
+        headers: API Headers (contains Authorization Headers)
+        cand_id_list: list of candidate IDs
 
-    DataFrame containing the same candidate data as the input
+    Returns:
+        df_dict_cand: dictionary containing candidate data
     '''
     # Create DataFrame column labels
     df_dict_cand = {}
@@ -161,7 +182,7 @@ def retrieve_activities(url, headers, cand_id_list):
         stages = deepcopy(stage_name_list)
         disqualified = False
         for act in r_cand_id_act:
-            if act['action'] == 'disqualified' and disqualified == False:
+            if act['action'] == 'disqualified' and not disqualified:
                 df_dict_cand['disqualified_at'].append(act['created_at'])
                 disqualified = True
             if act['stage_name'] in stage_name_list:
@@ -170,7 +191,7 @@ def retrieve_activities(url, headers, cand_id_list):
                 else:
                     df_dict_cand[act['stage_name']].append(act['created_at'])
                     stages.remove(act['stage_name'])
-        if disqualified == False:
+        if not disqualified:
             df_dict_cand['disqualified_at'].append(np.nan)
         for remaining_stage in stages:
             df_dict_cand[remaining_stage].append(np.nan)
