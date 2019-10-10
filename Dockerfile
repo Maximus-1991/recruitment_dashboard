@@ -1,7 +1,7 @@
-FROM python:3.7-alpine
+FROM python:3.7
 
-RUN mkdir -p /user/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /user/app
+WORKDIR /usr/app
 
 ADD requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
