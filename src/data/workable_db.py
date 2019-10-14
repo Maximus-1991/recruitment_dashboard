@@ -5,6 +5,7 @@ Functions to retrieve update Database and request data from Database.
 import time
 import requests
 import mysql.connector
+import pymysql
 from sqlalchemy import create_engine
 
 import pandas as pd

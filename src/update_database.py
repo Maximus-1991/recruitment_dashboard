@@ -20,9 +20,13 @@ def database_update():
 
     logging.info('here')
 
-    update_db(db_password=DB_PASSWORD, api_url=API_URL, api_headers=API_HEADERS, key_list=KEY_LIST,
-              db_name="candidates2", db_user=DB_USER, host='127.0.0.1', port=3306,
-              database='recruitment_dashboard', start_date=None)
+    #update_db(db_password=DB_PASSWORD, api_url=API_URL, api_headers=API_HEADERS, key_list=KEY_LIST,
+    #          db_name="candidates2", db_user=DB_USER, host='127.0.0.1', port=3306,
+    #          database='recruitment_dashboard', start_date=None)
+
+    update_db(db_password='MjB6KtDfI4pkzKr9', api_url=API_URL, api_headers=API_HEADERS, key_list=KEY_LIST,
+              db_name="candidates2", db_user=DB_USER, host='34.90.224.97', port=3306,
+              database='recruitment', start_date=None)
 
     logging.info('success!')
     print("DATABASE UPDATED")

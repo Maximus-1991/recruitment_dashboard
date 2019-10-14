@@ -1,0 +1,25 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: update_sql_db  # the name of your job
+spec:
+  schedule: "22 * * * *" #CronJob scheduler every 10th min of the hour "min hour day of month day m"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: update_db_im  # give the image in your job a name, can be anything
+            image: gcr.io/vantage-dashboard-252807/docker_test_im:latest  # the path to the image
+            imagePullPolicy: Always
+            command: []
+            resources:
+              limits:
+                memory: "2001Mi"  # the maximum amount of RAM your application can/will use
+                cpu: "1.6"  # the maximum amount of CPU's your application can/will use
+              requests:
+                memory: "2000Mi"  # the expected amount of memory that you use
+                cpu: "1.5"  # the expected amount of CPU that you use
+          restartPolicy: OnFailure
+---
