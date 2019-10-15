@@ -1,12 +1,12 @@
-FROM python:3.7-alpine
+FROM python:3.7
 
-RUN mkdir -p /user/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /usr/app
+WORKDIR /usr/app
 
 ADD requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-ADD src .
+ADD src ./src
 ADD .env .
 
-CMD [ "python", "-m", "src.update_database.py"]
+CMD ["python", "-m", "src"]
